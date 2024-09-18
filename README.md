@@ -1,3 +1,6 @@
+# Modification
+See modifications on the `010editor-template` branch.
+
 # SPIR-V Headers
 
 This repository contains machine-readable files for the
