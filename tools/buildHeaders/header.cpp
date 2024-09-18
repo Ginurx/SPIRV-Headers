@@ -200,7 +200,7 @@ IN THE MATERIALS.
 
     const std::string TPrinter::DocComment2 =
         "Enumeration tokens for SPIR-V, in various styles:\n"
-        "  C, C++, C++11, JSON, Lua, Python, C#, D, Beef\n"
+        "  C, C++, C++11, JSON, Lua, Python, C#, D, Beef, 010BT\n"
         "\n"
         "- C will have tokens with a \"Spv\" prefix, e.g.: SpvSourceLanguageGLSL\n"
         "- C++ will have tokens in the \"spv\" name space, e.g.: spv::SourceLanguageGLSL\n"
@@ -211,8 +211,8 @@ IN THE MATERIALS.
         "    e.g.: Spv.Specification.SourceLanguage.GLSL\n"
         "- D will have tokens under the \"spv\" module, e.g: spv.SourceLanguage.GLSL\n"
         "- Beef will use enum classes in the Specification class located in the \"Spv\" namespace,\n"
-        "    e.g.: Spv.Specification.SourceLanguage.GLSL\n"
-        "\n"
+        "    e.g.: Spv.Specification.SourceLanguage.GLSL\n"        "\n"
+        "- 010BT will have tokens with a \"Spv\" prefix, e.g.: SpvSourceLanguageGLSL\n"
         "Some tokens act like mask values, which can be OR'd together,\n"
         "while others are mutually exclusive.  The mask-like ones have\n"
         "\"Mask\" in their name, and a parallel enum that has the shift\n"
@@ -873,6 +873,39 @@ IN THE MATERIALS.
         }
     };
 
+    // 010Editor template printer
+    class TPrinter010BT final : public TPrinterCBase {
+    private:
+        std::string commentBeg() const override            { return "/*\n"; }
+        std::string commentEnd(bool isLast) const override { return "*/\n"; }
+        std::string commentBOL() const override            { return "** ";  }
+
+        std::string enumBeg(const std::string& s, enumStyle_t style) const override {
+            return std::string("typedef enum ") + pre() + s + styleStr(style) + "_ {\n";
+        }
+
+        std::string enumEnd(const std::string& s, enumStyle_t style, bool isLast) const override {
+            return "} " + pre() + s + styleStr(style) + ";\n\n";
+        }
+
+        std::string enumFmt(const std::string& s, const valpair_t& v,
+                            enumStyle_t style, bool isLast) const override {
+            return indent() + pre() + s + v.second + styleStr(style) + " = " + fmtStyleVal(v.first, style) + ",\n";
+        }
+
+        std::string pre() const override { return "Spv"; } // C name prefix
+        std::string headerGuardSuffix() const override { return "H"; }
+
+        std::string fmtConstInt(unsigned val, const std::string& name,
+                                        const char* fmt, bool isLast) const override
+        {
+            return std::string("const unsigned int ") + pre() + name +
+                " = " + fmtNum(fmt, val) + (isLast ? ";\n\n" : ";\n");
+        }
+
+        void printUtility(std::ostream& out) const override { }
+    };
+
 } // namespace
 
 namespace spv {
@@ -890,6 +923,7 @@ namespace spv {
         langInfo.push_back(std::make_pair(ELangCSharp,  "spirv.cs"));
         langInfo.push_back(std::make_pair(ELangD,       "spv.d"));
         langInfo.push_back(std::make_pair(ELangBeef,    "spirv.bf"));
+        langInfo.push_back(std::make_pair(ELang010BT,   "spirv_inc.bt"));
 
         for (const auto& lang : langInfo) {
             std::ofstream out(lang.second, std::ios::out);
@@ -918,6 +952,7 @@ namespace spv {
             case ELangCSharp:  p = TPrinterPtr(new TPrinterCSharp);  break;
             case ELangD:       p = TPrinterPtr(new TPrinterD);       break;
             case ELangBeef:    p = TPrinterPtr(new TPrinterBeef);    break;
+            case ELang010BT:   p = TPrinterPtr(new TPrinter010BT);   break;
             case ELangAll:     PrintAllHeaders();                    break;
             default:
                 std::cerr << "Unknown language." << std::endl;

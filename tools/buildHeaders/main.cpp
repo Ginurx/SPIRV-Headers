@@ -53,6 +53,7 @@ void Usage()
            "     C#     - C# module (also accepts CSharp)\n"
            "     D      - D module\n"
            "     Beef   - Beef module\n"
+           "     010BT  - 010Editor template header\n"
            "  -H print header in all supported languages to files in current directory\n"
            );
 }
@@ -99,7 +100,10 @@ bool ProcessArguments(int argc, char* argv[])
                     Language = spv::ELangD;
                 } else if (language == "beef") {
                     Language = spv::ELangBeef;
-                } else
+                } else if (language == "010bt") {
+                    Language = spv::ELang010BT;
+                }
+                else
                     return false;
 
                 return true;

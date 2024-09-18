@@ -44,6 +44,7 @@ namespace spv {
         ELangCSharp,   // CSharp
         ELangD,        // D
         ELangBeef,     // Beef
+        ELang010BT,    // 010Editor
 
         ELangAll,      // print headers in all languages to files
     };
